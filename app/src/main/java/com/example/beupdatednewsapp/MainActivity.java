@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-       swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
 
@@ -67,53 +67,22 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setNestedScrollingEnabled(false);
 
-       onLoadingSwipeRefresh("");
-//
-//        errorLayout = findViewById(R.id.errorLayout);
-//        errorImage = findViewById(R.id.errorImage);
-//        errorTitle = findViewById(R.id.errorTitle);
-//        errorMessage = findViewById(R.id.errorMessage);
-//        btnRetry = findViewById(R.id.btnRetry);
-//        LoadJson("");
+        onLoadingSwipeRefresh("");
+
+
+        //errorpage
+        errorLayout = findViewById(R.id.errorLayout);
+        errorImage = findViewById(R.id.errorImage);
+        errorTitle = findViewById(R.id.errorTitle);
+        errorMessage = findViewById(R.id.errorMessage);
+        btnRetry = findViewById(R.id.btnRetry);
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-
-
-        MenuInflater inflater=getMenuInflater();
-        inflater.inflate(R.menu.menu_main,menu);
-        SearchManager searchManager=(SearchManager)getSystemService(Context.SEARCH_SERVICE);
-        final SearchView searchView=(SearchView) menu.findItem(R.id.action_search).getActionView();
-        MenuItem searchMenuItem=menu.findItem(R.id.action_search);
-
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setQueryHint("Search Latest Newss...");
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-    @Override
-    public boolean onQueryTextSubmit(String query) {
-        if(query.length()>2){
-            onLoadingSwipeRefresh(query);
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onQueryTextChange(String newText) {
-    ;
-        return false;
-    }
-});
-
-        searchMenuItem.getIcon().setVisible(false,false);
-
-        return true;
-    }
 
     public void LoadJson(final  String keyword) {
 
-//      errorLayout.setVisibility(View.GONE);
+        errorLayout.setVisibility(View.GONE);
         topHeadline.setVisibility(View.INVISIBLE);
         swipeRefreshLayout.setRefreshing(true);
 
@@ -130,7 +99,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             call = apiInterface.getNews(country, API_KEY);
         }
 
+
         call.enqueue(new Callback<News>() {
+
+
             @Override
             public void onResponse(Call<News> call, Response<News> response) {
                 if (response.isSuccessful() && response.body().getArticles() != null) {
@@ -145,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     adapter.notifyDataSetChanged();
 
                     initListener();
-//
+
                     topHeadline.setVisibility(View.VISIBLE);
                     swipeRefreshLayout.setRefreshing(false);
 
@@ -155,33 +127,30 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     topHeadline.setVisibility(View.INVISIBLE);
                     swipeRefreshLayout.setRefreshing(false);
 
-                    Toast.makeText(MainActivity.this, "no result", Toast.LENGTH_SHORT).show();
+
+                    //error
+
+                    String errorCode;
+                    switch (response.code()) {
+                        case 404:
+                            errorCode = "404 not found";
+                            break;
+                        case 500:
+                            errorCode = "500 server broken";
+                            break;
+                        default:
+                            errorCode = "unknown error";
+                            break;
+
+                    }
+                    showErrorMessage(
+                            R.drawable.no_result,
+                            "No Result",
+                            "Please Try Again!\n" +
+                                    errorCode);
                 }
-//
-//                    topHeadline.setVisibility(View.INVISIBLE);
-//                    swipeRefreshLayout.setRefreshing(false);
-//
-//                    String errorCode;
-//                    switch (response.code()) {
-//                        case 404:
-//                            errorCode = "404 not found";
-//                            break;
-//                        case 500:
-//                            errorCode = "500 server broken";
-//                            break;
-//                        default:
-//                            errorCode = "unknown error";
-//                            break;
-//                    }
-//
-//                    showErrorMessage(
-//                            R.drawable.no_result,
-//                            "No Result",
-//                            "Please Try Again!\n"+
-//                                    errorCode);
-//
-//                }
             }
+
 
             @Override
             public void onFailure(Call<News> call, Throwable t) {
@@ -190,45 +159,18 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 topHeadline.setVisibility(View.INVISIBLE);
                 swipeRefreshLayout.setRefreshing(false);
 
+                showErrorMessage(
+                        R.drawable.no_result,
+                        "Oops..",
+                        "Network failure,Please Try Again!\n" +
+                                t.toString());
+
             }
         });
     }
-        //refresh
-        @Override
-        public void onRefresh() {
-            LoadJson("");
-        }
-
-        private void onLoadingSwipeRefresh(final String keyword){
-
-            swipeRefreshLayout.post(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            LoadJson(keyword);
-                        }
-                    }
-            );
-
-        }
 
 
-//
-//            @Override
-//            public void onFailure(Call<News> call, Throwable t) {
-//                topHeadline.setVisibility(View.INVISIBLE);
-//                swipeRefreshLayout.setRefreshing(false);
-//                showErrorMessage(
-//                        R.drawable.oops,
-//                        "Oops..",
-//                        "Network failure, Please Try Again\n"+
-//                                t.toString());
-//            }
-//        });
-//
-//    }
-
-
+    //retrofit
 
     private void initListener(){
 
@@ -261,63 +203,88 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     }
 
-//
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//
-//        MenuInflater inflater = getMenuInflater();
-//        inflater.inflate(R.menu.main_menu, menu);
-//        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-//        final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-//        MenuItem searchMenuItem = menu.findItem(R.id.action_search);
-//
-//        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-//        searchView.setQueryHint("Search Latest News...");
-//        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-//            @Override
-//            public boolean onQueryTextSubmit(String query) {
-//                if (query.length() > 2){
-//                    onLoadingSwipeRefresh(query);
-//                }
-//                else {
-//                    Toast.makeText(MainActivity.this, "Type more than two letters!", Toast.LENGTH_SHORT).show();
-//                }
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean onQueryTextChange(String newText) {
-//                return false;
-//            }
-//        });
-//
-//        searchMenuItem.getIcon().setVisible(false, false);
-//
-//        return true;
-//    }
+
+
+    //menu search,settings
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+
+        MenuInflater inflater=getMenuInflater();
+        inflater.inflate(R.menu.menu_main,menu);
+        SearchManager searchManager=(SearchManager)getSystemService(Context.SEARCH_SERVICE);
+        final SearchView searchView=(SearchView) menu.findItem(R.id.action_search).getActionView();
+        MenuItem searchMenuItem=menu.findItem(R.id.action_search);
+
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setQueryHint("Search Latest Newss...");
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if(query.length()>2){
+                    onLoadingSwipeRefresh(query);
+                }
+                return false;
+            }
+
+
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+
+                return false;
+            }
+
+
+        });
+
+        searchMenuItem.getIcon().setVisible(false,false);
+
+        return true;
 
     }
 
 
 
-//
-//    private void showErrorMessage(int imageView, String title, String message){
-//
-//        if (errorLayout.getVisibility() == View.GONE) {
-//            errorLayout.setVisibility(View.VISIBLE);
-//        }
-//
-//        errorImage.setImageResource(imageView);
-//        errorTitle.setText(title);
-//        errorMessage.setText(message);
-//
-//        btnRetry.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                onLoadingSwipeRefresh("");
-//            }
-//        });
-//
-//    }
+    //refresh
+    @Override
+    public void onRefresh() {
+        LoadJson("");
+    }
+
+    private void onLoadingSwipeRefresh(final String keyword){
+
+        swipeRefreshLayout.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        LoadJson(keyword);
+                    }
+                }
+        );
+
+    }
 
 
+
+    private void showErrorMessage(int imageView, String title, String message) {
+
+        if (errorLayout.getVisibility() == View.GONE) {
+            errorLayout.setVisibility(View.VISIBLE);
+        }
+
+        errorImage.setImageResource(imageView);
+        errorTitle.setText(title);
+        errorMessage.setText(message);
+
+        btnRetry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onLoadingSwipeRefresh("");
+            }
+        });
+
+    }
+
+}
